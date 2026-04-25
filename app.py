@@ -26,10 +26,31 @@ def hello():
 @app.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json()
+
+    # Check if username already exists
+    existing_user = User.query.filter_by(username=data["username"]).first()
+    if existing_user:
+        return jsonify({"message": "Username already taken"}), 409
+
     user = User(username=data["username"], password=data["password"])
     db.session.add(user)
     db.session.commit()
     return jsonify({"message": "User created"}), 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    user = User.query.filter_by(username=data["username"]).first()
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    if user.password != data["password"]:
+        return jsonify({"message": "Wrong password"}), 401
+
+    return jsonify({"message": "Login attempt successful"}), 200
 
 
 if __name__ == "__main__":
