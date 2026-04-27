@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
@@ -30,7 +30,7 @@ class Event(db.Model):
 
 @app.route("/")
 def hello():
-    return "Welcome to Organized Time Line. "
+    return render_template("index.html")
 
 
 @app.route("/signup", methods=["POST"])
@@ -60,7 +60,12 @@ def login():
     if user.password != data["password"]:
         return jsonify({"message": "Wrong password"}), 401
 
-    return jsonify({"message": "Login attempt successful"}), 200
+    return jsonify({"message": "Login successful", "user_id": user.id}), 200
+
+
+@app.route("/calendar")
+def calendar():
+    return render_template("calendar.html")
 
 
 @app.route("/create_event", methods=["POST"])
