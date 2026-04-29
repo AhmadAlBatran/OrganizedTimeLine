@@ -12,21 +12,24 @@
             <h2>Events</h2>
             <div id="events-list"></div>
         </div>
-
         <script>
             const user_id = localStorage.getItem("user_id");
 
             async function loadEvents() {
-                const response = await fetch("/read_event", {
-                    method: "GET",
+                const response = await fetch("/get_events", {
+                    method: "POST", // ✅ FIXED
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ user_id: user_id }),
                 });
+
                 const data = await response.json();
+
                 const list = document.getElementById("events-list");
                 list.innerHTML = "";
+
                 data.events.forEach((event) => {
-                    list.innerHTML += `<div class="card mb-2 p-3">
+                    list.innerHTML += `
+                    <div class="card mb-2 p-3">
                         <h5>${event.header}</h5>
                         <p>${event.description}</p>
                         <p>${event.date} — ${event.duration} mins</p>

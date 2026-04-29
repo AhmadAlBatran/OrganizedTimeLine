@@ -37,13 +37,12 @@ def hello():
 def signup():
     data = request.get_json()
 
-    # Check if username already exists
     existing_user = User.query.filter_by(username=data["username"]).first()
     if existing_user:
         return jsonify({"message": "Username already taken"}), 409
 
-    user = User(username=data["username"], password=data["password"])
-    db.session.add(user)
+    new_user = User(username=data["username"], password=data["password"])
+    db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User created"}), 201
 
@@ -65,7 +64,11 @@ def login():
 
 @app.route("/calendar")
 def calendar():
-    return render_template("calendar.html")
+    data = request.get_json()
+
+    events = Event.query.filter_by(user_id=data["user_id"]).all()
+
+    return render_template("calendar.html", events=events)
 
 
 @app.route("/create_event", methods=["POST"])
