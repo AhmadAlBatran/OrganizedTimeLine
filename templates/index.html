@@ -8,7 +8,6 @@
         />
     </head>
     <body>
-
         <div class="container mt-5">
             <h2>Login</h2>
             <input
@@ -24,9 +23,7 @@
                 placeholder="Password"
             />
             <button class="btn btn-primary" onclick="login()">Login</button>
-        </div>
 
-        <div, class="container mt-5">
             <h2>Sign Up</h2>
             <input
                 type="text"
@@ -41,16 +38,14 @@
                 placeholder="Password"
             />
             <button class="btn btn-primary" onclick="signup()">Sign up</button>
-
-
-
         </div>
-
 
         <script>
             async function login() {
-                const username = document.getElementById("Login_username").value;
-                const password = document.getElementById("Login_password").value;
+                const username =
+                    document.getElementById("Login_username").value;
+                const password =
+                    document.getElementById("Login_password").value;
 
                 const response = await fetch("/login", {
                     method: "POST",
@@ -60,25 +55,26 @@
 
                 const data = await response.json();
                 if (response.ok) {
-                    localStorage.setItem('user_id', data.user_id);
-                    window.location.href = '/calendar';
-                }
-                else {
+                    localStorage.setItem("user_id", data.user_id);
+                    window.location.href = "/calendar";
+                } else {
                     alert(data.message);
                 }
             }
-            async function signup(){
-              const username = document.getElementById("SignUp_username").value;
-              const password = document.getElementById("SignUp_password").value;
+            async function signup() {
+                const username =
+                    document.getElementById("SignUp_username").value;
+                const password =
+                    document.getElementById("SignUp_password").value;
 
-              const response = await fetch("/signup", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ username, password }),
-              });
+                const response = await fetch("/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password }),
+                });
 
-              const data = await response.json();
-              alert(data.message);
+                const data = await response.json();
+                alert(data.message);
             }
         </script>
     </body>

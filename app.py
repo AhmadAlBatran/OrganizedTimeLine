@@ -64,11 +64,7 @@ def login():
 
 @app.route("/calendar")
 def calendar():
-    data = request.get_json()
-
-    events = Event.query.filter_by(user_id=data["user_id"]).all()
-
-    return render_template("calendar.html", events=events)
+    return render_template("calendar.html")
 
 
 @app.route("/create_event", methods=["POST"])
@@ -86,6 +82,26 @@ def create_event():
     db.session.commit()
 
     return jsonify({"message": "Event Created"}), 201
+
+
+@app.route("/get_events", methods=["POST"])
+def get_event():
+    data = request.get_json()
+    events = Event.query.filter_by(user_id=data["user_id"]).all()
+    return jsonify(
+        {
+            "events": [
+                {
+                    "id": e.id,
+                    "header": e.header,
+                    "description": e.description,
+                    "date": str(e.date),
+                    "duration": e.duration,
+                }
+                for e in events
+            ]
+        }
+    ), 200
 
 
 @app.route("/read_event", methods=["GET"])
