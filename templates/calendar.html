@@ -11,6 +11,7 @@
         <div class="container mt-3">
             <div id="calendar"></div>
         </div>
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 const userId = localStorage.getItem("user_id");
@@ -29,9 +30,6 @@
                         center: "title",
                         right: "timeGridDay,timeGridWeek,dayGridMonth",
                     },
-                    selectable: true,
-                    editable: true,
-                    eventDurationEditable: true,
 
                     events: async function (
                         fetchInfo,
@@ -46,12 +44,17 @@
                             });
                             const data = await response.json();
 
-                            const formattedEvents = data.events.map((e) => ({
-                                id: e.id,
-                                title: e.header,
-                                start: e.date.replace(" ", "T"),
-                                duration: e.duration + "m",
-                            }));
+                            // Map the backend data to FullCalendar format
+                            const formattedEvents = data.events.map((e) => {
+                                const baseDate = e.date.split(" ")[0];
+                                return {
+                                    id: e.id,
+                                    title: e.header,
+                                    // Combine date with start and end times
+                                    start: `${baseDate}T${e.start}:00`,
+                                    end: `${baseDate}T${e.end}:00`,
+                                };
+                            });
 
                             successCallback(formattedEvents);
                         } catch (error) {
@@ -60,19 +63,38 @@
                         }
                     },
 
+                    selectable: true,
                     select: async function (info) {
-                        const title = prompt("Enter Event Title:");
+                        let title = prompt("Enter Event Title:");
+
                         if (title) {
+                            const year = info.start.getFullYear();
+                            const month = String(
+                                info.start.getMonth() + 1,
+                            ).padStart(2, "0");
+                            const day = String(info.start.getDate()).padStart(
+                                2,
+                                "0",
+                            );
+
+                            const dateStr = `${year}-${month}-${day} 00:00:00`;
+
+                            const startTimeStr = info.startStr
+                                .split("T")[1]
+                                .substring(0, 5);
+                            const endTimeStr = info.endStr
+                                .split("T")[1]
+                                .substring(0, 5);
+
                             const response = await fetch("/create_event", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({
                                     header: title,
-                                    description: "New Event",
-                                    date: info.start.toISOString(),
-                                    duration: Math.round(
-                                        (info.end - info.start) / 60000,
-                                    ),
+                                    description: "Created via Calendar UI",
+                                    date: dateStr,
+                                    start: startTimeStr,
+                                    end: endTimeStr,
                                     user_id: userId,
                                 }),
                             });
@@ -83,43 +105,65 @@
                                 alert("Failed to create event.");
                             }
                         }
-                    },
 
-                    eventDrop: async function (info) {
-                        const response = await fetch("/update_event", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                id: info.event.id,
-                                date: info.event.start.toISOString(),
-                                user_id: userId,
-                            }),
-                        });
-                        if (!response.ok) {
-                            alert("Failed to update event");
-                            info.revert();
-                        }
+                        calendar.unselect();
                     },
+                    editable: true,
+                    eventResizableFromStart: true,
 
                     eventResize: async function (info) {
-                        const response = await fetch("/update_event", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                id: info.event.id,
-                                date: info.event.start.toISOString(),
-                                duration: Math.round(
-                                    (info.event.end - info.event.start) / 60000,
-                                ),
-                                user_id: userId,
-                            }),
-                        });
-                        if (!response.ok) {
-                            alert("Failed to update event");
+                        const eventId = info.event.id;
+                        const year = info.event.start.getFullYear();
+                        const month = String(
+                            info.event.start.getMonth() + 1,
+                        ).padStart(2, "0");
+                        const day = String(info.event.start.getDate()).padStart(
+                            2,
+                            "0",
+                        );
+                        const dateStr = `${year}-${month}-${day} 00:00:00`;
+
+                        const startTimeStr = info.event.start
+                            .toTimeString()
+                            .substring(0, 5);
+
+                        const endObj =
+                            info.event.end ||
+                            new Date(
+                                info.event.start.getTime() + 60 * 60 * 1000,
+                            );
+                        const endTimeStr = endObj
+                            .toTimeString()
+                            .substring(0, 5);
+
+                        try {
+                            const response = await fetch("/update_event", {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    id: eventId,
+                                    header: info.event.title,
+                                    description:
+                                        info.event.extendedProps.description ||
+                                        "Updated via drag",
+                                    date: dateStr,
+                                    start: startTimeStr,
+                                    end: endTimeStr,
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                alert("Failed to update event in database.");
+                                info.revert();
+                            }
+                        } catch (error) {
+                            console.error("Error updating event:", error);
+                            alert("Server error.");
                             info.revert();
                         }
                     },
                 });
+
                 calendar.render();
             });
         </script>
