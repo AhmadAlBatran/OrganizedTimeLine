@@ -24,8 +24,8 @@ class Event(db.Model):
     header = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(240))
     date = db.Column(db.DateTime)
-    start = db.Column(db.String)
-    end = db.Column(db.String)
+    start = db.Column(db.String(20))
+    end = db.Column(db.String(20))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
 
