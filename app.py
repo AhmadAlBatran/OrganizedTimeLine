@@ -24,7 +24,8 @@ class Event(db.Model):
     header = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(240))
     date = db.Column(db.DateTime)
-    duration = db.Column(db.Integer)
+    start = db.Column(db.String)
+    end = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
 
@@ -74,7 +75,8 @@ def create_event():
         header=data["header"],
         description=data["description"],
         date=datetime.strptime(data["date"], "%Y-%m-%d %H:%M:%S"),
-        duration=data["duration"],
+        start=data["start"],
+        end=data["end"],
         user_id=data["user_id"],
     )
 
@@ -85,7 +87,7 @@ def create_event():
 
 
 @app.route("/get_events", methods=["POST"])
-def get_event():
+def get_events():
     data = request.get_json()
     events = Event.query.filter_by(user_id=data["user_id"]).all()
     return jsonify(
@@ -96,7 +98,8 @@ def get_event():
                     "header": e.header,
                     "description": e.description,
                     "date": str(e.date),
-                    "duration": e.duration,
+                    "start": e.start,
+                    "end": e.end,
                 }
                 for e in events
             ]
@@ -118,7 +121,8 @@ def read_event():
             "header": event.header,
             "description": event.description,
             "date": event.date,
-            "duration": event.duration,
+            "start": event.start,
+            "end": event.end,
             "user_id": event.user_id,
         }
     ), 200
@@ -141,10 +145,11 @@ def update_event():
     if not event:
         return jsonify({"message": "Event not found"}), 404
 
-    event.header = (data["header"],)
+    event.header = data["header"]
     event.description = data["description"]
     event.date = datetime.strptime(data["date"], "%Y-%m-%d %H:%M:%S")
-    event.duration = data["duration"]
+    event.start = data["start"]
+    event.end = data["end"]
 
     db.session.commit()
 
