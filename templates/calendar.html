@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>Calendar</title>
+        <title>OrganizedTimeLine</title>
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
         <link
             href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -12,7 +12,7 @@
     <body>
         <div class="container mt-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>My Calendar</h2>
+                <h2>My TimeLine</h2>
                 <button
                     class="btn btn-outline-danger btn-sm"
                     onclick="logout()"
@@ -96,7 +96,7 @@
         </div>
 
         <script>
-            let calendar; // Make globally available for the modal functions
+            let calendar;
 
             document.addEventListener("DOMContentLoaded", function () {
                 const userId = localStorage.getItem("user_id");
@@ -114,7 +114,6 @@
                         right: "timeGridDay,timeGridWeek,dayGridMonth",
                     },
 
-                    // 1. FETCH
                     events: async function (
                         fetchInfo,
                         successCallback,
@@ -144,7 +143,6 @@
                         }
                     },
 
-                    // 2. CREATE (Drag)
                     selectable: true,
                     select: async function (info) {
                         let title = prompt("Enter Event Title:");
@@ -182,60 +180,85 @@
                     editable: true,
                     eventResizableFromStart: true,
                     eventResize: async function (info) {
-                        const year = info.event.start.getFullYear();
-                        const month = String(
-                            info.event.start.getMonth() + 1,
-                        ).padStart(2, "0");
-                        const day = String(info.event.start.getDate()).padStart(
-                            2,
-                            "0",
-                        );
-                        const endObj =
-                            info.event.end ||
-                            new Date(
-                                info.event.start.getTime() + 60 * 60 * 1000,
-                            );
+                        try {
+                            const year = info.event.start.getFullYear();
+                            const month = String(
+                                info.event.start.getMonth() + 1,
+                            ).padStart(2, "0");
+                            const day = String(
+                                info.event.start.getDate(),
+                            ).padStart(2, "0");
+                            const endObj =
+                                info.event.end ||
+                                new Date(
+                                    info.event.start.getTime() + 60 * 60 * 1000,
+                                );
 
-                        const response = await fetch("/update_event", {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                id: info.event.id,
-                                header: info.event.title,
-                                description:
-                                    info.event.extendedProps.description || "",
-                                date: `${year}-${month}-${day} 00:00:00`,
-                                start: info.event.start
-                                    .toTimeString()
-                                    .substring(0, 5),
-                                end: endObj.toTimeString().substring(0, 5),
-                            }),
-                        });
-                        eventDrop: async function(info) {
-                                                const year = info.event.start.getFullYear();
-                                                const month = String(info.event.start.getMonth() + 1).padStart(2, '0');
-                                                const day = String(info.event.start.getDate()).padStart(2, '0');
-                                                const endObj = info.event.end || new Date(info.event.start.getTime() + 60 * 60 * 1000);
+                            const response = await fetch("/update_event", {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    id: parseInt(info.event.id),
+                                    header: info.event.title,
+                                    description:
+                                        info.event.extendedProps.description ||
+                                        "",
+                                    date: `${year}-${month}-${day} 00:00:00`,
+                                    start: info.event.start
+                                        .toTimeString()
+                                        .substring(0, 5),
+                                    end: endObj.toTimeString().substring(0, 5),
+                                }),
+                            });
+                            if (!response.ok) {
+                                alert("Failed to resize event in database.");
+                                info.revert();
+                            }
+                        } catch (error) {
+                            info.revert();
+                        }
+                    },
 
-                                                const response = await fetch('/update_event', {
-                                                    method: 'PUT',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({
-                                                        id: parseInt(info.event.id),
-                                                        header: info.event.title,
-                                                        description: info.event.extendedProps.description || "",
-                                                        date: `${year}-${month}-${day} 00:00:00`,
-                                                        start: info.event.start.toTimeString().substring(0, 5),
-                                                        end: endObj.toTimeString().substring(0, 5)
-                                                    })
-                                                });
+                    eventDrop: async function (info) {
+                        try {
+                            const year = info.event.start.getFullYear();
+                            const month = String(
+                                info.event.start.getMonth() + 1,
+                            ).padStart(2, "0");
+                            const day = String(
+                                info.event.start.getDate(),
+                            ).padStart(2, "0");
+                            const endObj =
+                                info.event.end ||
+                                new Date(
+                                    info.event.start.getTime() + 60 * 60 * 1000,
+                                );
 
-                                                if (!response.ok) {
-                                                    alert("Failed to move event.");
-                                                    info.revert();
-                                                }
-                                            }
-                        if (!response.ok) info.revert();
+                            const response = await fetch("/update_event", {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    id: parseInt(info.event.id),
+                                    header: info.event.title,
+                                    description:
+                                        info.event.extendedProps.description ||
+                                        "",
+                                    date: `${year}-${month}-${day} 00:00:00`,
+                                    start: info.event.start
+                                        .toTimeString()
+                                        .substring(0, 5),
+                                    end: endObj.toTimeString().substring(0, 5),
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                alert("Failed to move event in database.");
+                                info.revert();
+                            }
+                        } catch (error) {
+                            alert("Network error.");
+                            info.revert();
+                        }
                     },
 
                     eventClick: function (info) {
@@ -257,7 +280,7 @@
                             .toTimeString()
                             .substring(0, 5);
 
-                        var editModal = new bootstrap.Modal(
+                        var editModal = bootstrap.Modal.getOrCreateInstance(
                             document.getElementById("editEventModal"),
                         );
                         editModal.show();
@@ -267,7 +290,9 @@
             });
 
             async function saveEventDetails() {
-                const eventId = document.getElementById("editEventId").value;
+                const eventId = parseInt(
+                    document.getElementById("editEventId").value,
+                );
                 const eventObj = calendar.getEventById(eventId);
 
                 const year = eventObj.start.getFullYear();
@@ -291,17 +316,21 @@
                 });
 
                 if (response.ok) {
-                    bootstrap.Modal.getInstance(
+                    bootstrap.Modal.getOrCreateInstance(
                         document.getElementById("editEventModal"),
                     ).hide();
                     calendar.refetchEvents();
+                } else {
+                    alert("Failed to save changes.");
                 }
             }
 
             async function deleteEvent() {
                 if (confirm("Are you sure you want to delete this event?")) {
-                    const eventId =
-                        document.getElementById("editEventId").value;
+                    const eventId = parseInt(
+                        document.getElementById("editEventId").value,
+                    );
+
                     const response = await fetch("/delete_event", {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" },
@@ -309,10 +338,12 @@
                     });
 
                     if (response.ok) {
-                        bootstrap.Modal.getInstance(
+                        bootstrap.Modal.getOrCreateInstance(
                             document.getElementById("editEventModal"),
                         ).hide();
                         calendar.refetchEvents();
+                    } else {
+                        alert("Failed to delete event.");
                     }
                 }
             }
