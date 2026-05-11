@@ -67,8 +67,15 @@ Open `http://localhost:5000` in your browser.
 
 ## Database
 
+- **Users Table**: Stores usernames and passwords and  
+- **Events Table**: Stores event details linked to users
+- 
+## Database
+ 
 - **Users Table**: Stores usernames and passwords
 - **Events Table**: Stores event details linked to users
+![Database Schema](1778476824727_image.png)
+provided by SupaBase Schema Visualizer 
 
 ## Future Features
 
