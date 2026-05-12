@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -42,7 +45,7 @@ def signup():
     if existing_user:
         return jsonify({"message": "Username already taken"}), 409
 
-    new_user = User(username=data["username"], password=data["password"])
+    new_user = User(username=data["username"], password=generate_password_hash.(data["password"]))
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User created"}), 201
@@ -57,8 +60,8 @@ def login():
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    if user.password != data["password"]:
-        return jsonify({"message": "Wrong password"}), 401
+    if not check_password_hash(user.password, data["password"]):
+         return jsonify({"message": "Wrong password"}), 401
 
     return jsonify({"message": "Login successful", "user_id": user.id}), 200
 
