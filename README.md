@@ -29,6 +29,7 @@ Open `http://localhost:5000` in your browser.
 ## Features
 
 - Sign up and login with user accounts
+- password hashing
 - Create events by clicking on calendar dates
 - Edit event details (title, description, time)
 - Drag and drop events to change dates/times
@@ -80,7 +81,6 @@ provided by SupaBase Schema Visualizer
 
 ## Future Features
 
-- Password hashing and security improvements
 - Email notifications for upcoming events
 - Event categories and color coding
 - Calendar sharing between users
